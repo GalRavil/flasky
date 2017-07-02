@@ -9,4 +9,4 @@ from ..models import Permission
 # make variables globally available to all templates
 @main.app_context_processor
 def inject_permissions():
-	return dict(Permission=Permission)
+    return dict(Permission=Permission)
