@@ -52,8 +52,9 @@ class Role(db.Model):
 
             'Moderator': (Permission.FOLLOW |
                           Permission.COMMENT |
-                          Permission.WRITE_ARTICLES,
-                          True),
+                          Permission.WRITE_ARTICLES |
+                          Permission.MODERATE_COMMENTS,
+                          False),
 
             'Administrator': (0xff, False)
         }
@@ -117,7 +118,7 @@ class User(UserMixin, db.Model):
                 member_since=forgery_py.date.date(True)
             )
             db.session.add(u)
-            generates randomly, there is a risk of having duplicates
+            # generates randomly, there is a risk of having duplicates
             try:
                 db.session.commit()
             except IntegrityError:

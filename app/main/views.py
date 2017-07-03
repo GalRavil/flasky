@@ -12,7 +12,7 @@ from ..models import User, Role, Permission, Post
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if current_user.can('Permission.WRITE_ARTICLES') and \
+    if current_user.can(Permission.WRITE_ARTICLES) and \
             form.validate_on_submit():
         post = Post(body=form.body.data,
                     author=current_user._get_current_object())
@@ -22,12 +22,12 @@ def index():
     # type=int ensures that if the argument cannot be converted to
     # an integer, the default value is returned
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timeestamp.desc()).paginate(
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
             page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
             error_out=False
         )
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts.
+    return render_template('index.html', form=form, posts=posts,
                             pagination=pagination)
 
 
@@ -39,7 +39,7 @@ def user(username):
     # an integer, the default value is returned
     page = request.args.get('page', 1, type=int)
     pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
-            page, per_page=current_app.config['FALSKY_POSTS_PER_PAGE'],
+            page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
             error_out=False
         )
     posts = pagination.items
