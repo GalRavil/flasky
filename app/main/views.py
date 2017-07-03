@@ -25,7 +25,7 @@ def index():
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     posts = user.posts.order_by(Post.timestamp.desc()).all()
-    return render_template('user.html', user=user, posts)
+    return render_template('user.html', user=user, posts=posts)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -60,7 +60,7 @@ def edit_profile_admin(id):
         user.name = form.name.data
         user.location = form.location.data
         user.about_me = form.about_me.data
-        db.session.aff(user)
+        db.session.add(user)
         flash('The profile has been updated.')
         return redirect(url_for('.user', username=user.username))
 
