@@ -154,7 +154,7 @@ class UserModelTestCase(unittest.TestCase):
 
         self.assertTrue(u1.followed.count() == 2)
         self.assertTrue(u2.followers.count() == 2)
-        self.assertTrue(Follow.query.count() == 2)
+        self.assertTrue(Follow.query.count() == 3)
 
         f1 = u1.followed.all()[-1]
         self.assertTrue(f1.followed == u2)
@@ -184,7 +184,7 @@ class UserModelTestCase(unittest.TestCase):
 
         self.assertTrue(u1.followed.count() == 1)
         self.assertTrue(u2.followers.count() == 1)
-        self.assertTrue(Follow.query.count() == 1)
+        self.assertTrue(Follow.query.count() == 2)
 
 
     def test_follow_timestamp(self):
@@ -202,3 +202,14 @@ class UserModelTestCase(unittest.TestCase):
 
         timestamp_after = datetime.utcnow()
         self.assertTrue(timestamp_before <= f.timestamp <= timestamp_after)
+
+    def test_to_json(self):
+        u = User(email='user@example.com', password='123')
+        db.session.add(u)
+        db.session.commit()
+
+        json_user = u.to_json()
+        expected_keys = ['url', 'username', 'member_since', 'last_seen',
+                        'posts', 'followed_posts', 'posts_count']
+        self.assertEqual(sorted(json_user.keys()), sorted(expected_keys))
+        self.assertTrue('api/v1.0/users/' in json_user['url'])
