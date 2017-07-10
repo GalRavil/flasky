@@ -103,12 +103,12 @@ class User(UserMixin, db.Model):
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     followed = db.relationship('Follow',
-                                foreign_keys=[Follow.follower_id],
-                                # lazy='joined'  causes the related object to be 
-                                # loaded immediately from the join query
-                                backref=db.backref('follower', lazy='joined'),
-                                lazy='dynamic',
-                                cascade='all, delete-orphan')
+                               foreign_keys=[Follow.follower_id],
+                               # lazy='joined'  causes the related object to be
+                               # loaded immediately from the join query
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
     followers = db.relationship('Follow',
                                 foreign_keys=[Follow.followed_id],
                                 backref=db.backref('followed', lazy='joined'),
@@ -162,7 +162,6 @@ class User(UserMixin, db.Model):
                 user.follow(user)
                 db.session.add(user)
                 db.session.commit()
-
 
     @property
     def password(self):
@@ -265,7 +264,7 @@ class User(UserMixin, db.Model):
         f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
-    
+
     def is_following(self, user):
         return self.followed.filter_by(followed_id=user.id).first() is not None
 
@@ -274,7 +273,7 @@ class User(UserMixin, db.Model):
 
     @property
     def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
             .filter(Follow.follower_id == self.id)
         # return db.session.query(Post).select_from(Follow).\
         #     filter_by(follower_id=self.id).\
@@ -288,14 +287,14 @@ class User(UserMixin, db.Model):
             'last_seen': self.last_seen,
             'posts': url_for('api.get_user_posts', id=self.id, _external=True),
             'followed_posts': url_for('api.get_user_followed_posts',
-                                        id=self.id, _external=True),
+                                      id=self.id, _external=True),
             'posts_count': self.posts.count()
         }
         return json_user
 
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'],
-                        expires_in=expiration)
+                       expires_in=expiration)
         return s.dumps({'id': self.id}).decode('ascii')
 
     @staticmethod
@@ -347,9 +346,9 @@ class Post(db.Model):
         for i in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
             p = Post(body=forgery_py.lorem_ipsum.sentences(randint(1, 5)),
-                    timestamp=forgery_py.date.date(True),
-                    author=u
-                )
+                     timestamp=forgery_py.date.date(True),
+                     author=u
+                     )
             db.session.add(p)
             db.session.commit()
 
@@ -361,9 +360,9 @@ class Post(db.Model):
             'ul', 'h1', 'h2', 'h3', 'h4', 'h5', 'p'
         ]
         target.body_html = bleach.linkify(bleach.clean(
-                markdown(value, output_format='html'),
-                tags=allowed_tags, strip=True
-            ))
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True
+        ))
 
     def to_json(self):
         json_post = {
@@ -372,7 +371,7 @@ class Post(db.Model):
             'body_html': self.body_html,
             'timestamp': self.timestamp,
             'author': url_for('api.get_user', id=self.author_id,
-                                _external=True),
+                              _external=True),
             'comments': url_for('api.get_post_comments', id=self.id,
                                 _external=True),
             'comment_count': self.comments.count()
@@ -385,6 +384,7 @@ class Post(db.Model):
         if body is None or body == '':
             raise ValidationError('post does not have a body')
         return Post(body=body)
+
 
 # Function on_change_body is registered as a listener of sqlalchemy's 'set'
 # event. It will be automatically invoken whenever the body field on any 
@@ -412,17 +412,16 @@ class Comment(db.Model):
                 tags=allowed_tags, strip=True)
         )
 
-
     def to_json(self):
         json_comment = {
             'url': url_for('api.get_comment', id=self.id, _external=True),
             'post': url_for('api.get_post', id=self.post_id,
-                             _external=True),
+                            _external=True),
             'body': self.body,
             'body_html': self.body_html,
             'timestamp': self.timestamp,
             'author': url_for('api.get_user', id=self.author_id,
-                                _external=True),
+                              _external=True),
         }
         return json_comment
 

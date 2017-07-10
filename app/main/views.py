@@ -1,9 +1,9 @@
-from flask import render_template, redirect, abort, url_for, flash,\
+from flask import render_template, redirect, abort, url_for, flash, \
     request, current_app, make_response
 from flask_login import login_required, current_user
 
 from . import main
-from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm, \
     CommentForm
 from .. import db
 from ..decorators import admin_required, permission_required
@@ -31,13 +31,13 @@ def index():
     else:
         query = Post.query
     pagination = query.order_by(Post.timestamp.desc()).paginate(
-            page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-            error_out=False
-        )
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False
+    )
     posts = pagination.items
     return render_template('index.html', form=form, posts=posts,
-                            show_followed=show_followed, 
-                            pagination=pagination)
+                           show_followed=show_followed,
+                           pagination=pagination)
 
 
 @main.route('/user/<username>')
@@ -48,12 +48,12 @@ def user(username):
     # an integer, the default value is returned
     page = request.args.get('page', 1, type=int)
     pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
-            page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-            error_out=False
-        )
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False
+    )
     posts = pagination.items
     return render_template('user.html', user=user, posts=posts,
-                            pagination=pagination)
+                           pagination=pagination)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -115,18 +115,18 @@ def post(id):
         # -1 page used to request the last page of comments so
         # that the comment just entered is seen on the page
         return redirect(url_for('.post', id=post.id, page=-1))
-    
+
     page = request.args.get('page', 1, type=int)
     if page == -1:
-        page = (post.comments.count() -1) // \
-            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+        page = (post.comments.count() - 1) // \
+               current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
         page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
         error_out=False)
     comments = pagination.items
 
     return render_template('post.html', posts=[post], form=form,
-                            comments=comments, pagination=pagination)
+                           comments=comments, pagination=pagination)
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -136,7 +136,7 @@ def edit(id):
     if current_user != post.author and \
             not current_user.can(Permission.ADMINISTER):
         abort(403)
-    
+
     form = PostForm()
     if form.validate_on_submit():
         post.body = form.body.data
@@ -177,7 +177,7 @@ def unfollow(username):
         return redirect(url_for('.user', username=username))
     current_user.unfolow(user)
     flash('You are not following {} anymore.'.format(username))
-    return redirect(user_for('.user', username=username))
+    return redirect(url_for('.user', username=username))
 
 
 @main.route('/followers/<username>')
@@ -188,13 +188,13 @@ def followers(username):
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(
-            page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
-            error_out=False)
+        page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
+        error_out=False)
     follows = [{'user': item.follower, 'timestamp': item.timestamp}
-                for item in pagination.items]
+               for item in pagination.items]
     return render_template('followers.html', user=user, title='Followers of',
-                            endpoint='.followers', pagination=pagination,
-                            follows=follows)
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
 
 
 @main.route('/followed-by/<username>')
@@ -208,17 +208,17 @@ def followed_by(username):
         page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
         error_out=False)
     follows = [{'user': item.followed, 'timestamp': item.timestamp}
-                for item in pagination.items]
+               for item in pagination.items]
     return render_template('followers.html', user=user, title='Followed by',
-                            endpoint='.followed_by', pagination=pagination,
-                            follows=follows)
+                           endpoint='.followed_by', pagination=pagination,
+                           follows=follows)
 
 
 @main.route('/all')
 @login_required
 def show_all():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
     return resp
 
 
@@ -226,7 +226,7 @@ def show_all():
 @login_required
 def show_followed():
     resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
     return resp
 
 
@@ -237,11 +237,11 @@ def moderate():
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
-        error_out=False 
+        error_out=False
     )
     comments = pagination.items
     return render_template('moderate.html', comments=comments,
-                            pagination=pagination, page=page)
+                           pagination=pagination, page=page)
 
 
 @main.route('/moderate/enable/<int:id>')
