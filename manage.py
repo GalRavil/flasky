@@ -29,14 +29,18 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
-def test(coverage=False):
+def test(coverage=False, test_name=None):
     """Run the unit tests"""
     if coverage and not os.environ.get('FLASK_COVERAGE'):
         import sys
         os.environ['FLASK_COVERAGE'] = '1'
         os.execvp(sys.executable, [sys.executable] + sys.argv)
     import unittest
-    tests = unittest.TestLoader().discover('tests')
+
+    if test_name is None:
+        tests = unittest.TestLoader().discover('tests')
+    else:
+        tests = unittest.TestLoader().loadTestsFromName('tests.' + test_name)
     unittest.TextTestRunner(verbosity=2).run(tests)
 
     if COV:
